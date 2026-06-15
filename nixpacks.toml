@@ -5,7 +5,7 @@ nixPkgs = ["php82", "phpPackages.composer", "libmysqlclient"]
 cmds = ["composer install --no-dev --optimize-autoloader --ignore-platform-reqs"]
 
 [phases.build]
-cmds = ["php artisan config:cache", "php artisan route:cache", "php artisan view:cache"]
+cmds = ["php artisan migrate --force", "php artisan db:seed --force", "php artisan config:cache", "php artisan route:cache", "php artisan view:cache"]
 
 [start]
-cmd = "php artisan migrate --force && php artisan db:seed --force && php artisan serve --host=0.0.0.0 --port=8000"
+cmd = "php artisan serve --host=0.0.0.0 --port=8000"
