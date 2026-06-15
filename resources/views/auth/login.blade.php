@@ -13,10 +13,11 @@
             min-height: 100vh;
             background: #0f2044;
             display: flex;
-            align-items: center;
+            align-items: flex-start;
             justify-content: center;
             position: relative;
-            overflow: hidden;
+            overflow-y: auto;
+            padding: 40px 0;
         }
 
         /* KTM blue diagonal background stripes */
@@ -53,26 +54,6 @@
         }
 
         /* KTM logo top */
-        .ktm-brand {
-            text-align: center;
-            margin-bottom: 24px;
-        }
-
-        .ktm-brand img {
-            height: 52px;
-            width: auto;
-            filter: brightness(0) invert(1);
-            margin-bottom: 10px;
-        }
-
-        .ktm-brand-name {
-            color: #fbbf24;
-            font-size: 11px;
-            font-weight: 600;
-            letter-spacing: 2px;
-            text-transform: uppercase;
-        }
-
         .login-card {
             background: #fff;
             border-radius: 16px;
@@ -333,18 +314,12 @@
 
 <div class="login-wrap">
 
-    {{-- KTM brand above card --}}
-    <div class="ktm-brand">
-        <img src="{{ asset('images/R.png') }}" alt="KTM Logo">
-        <div class="ktm-brand-name">Keretapi Tanah Melayu Berhad</div>
-    </div>
-
     <div class="login-card">
 
         {{-- Blue header --}}
         <div class="login-header">
             <div class="login-logo-wrap">
-                <img src="{{ asset('images/R.png') }}" alt="KTM">
+                <img src="{{ asset('images/R.png') }}" alt="KTM" style="height:48px;width:auto;filter:brightness(0) invert(1);margin-bottom:10px">
             </div>
             <div class="login-title">KTMe<span>DOIS</span></div>
             <div class="login-sub">Electronic Delivery Order &amp; Invoice System</div>
