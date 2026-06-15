@@ -11,7 +11,11 @@
         body {
             font-family: 'Segoe UI', Arial, sans-serif;
             min-height: 100vh;
-            background: #0f2044;
+            background:
+                radial-gradient(ellipse at 20% 50%, rgba(30,58,138,0.8) 0%, transparent 60%),
+                radial-gradient(ellipse at 80% 20%, rgba(251,191,36,0.15) 0%, transparent 50%),
+                radial-gradient(ellipse at 60% 80%, rgba(29,78,216,0.6) 0%, transparent 50%),
+                linear-gradient(135deg, #050d1f 0%, #0f2044 30%, #1a306b 60%, #0d1a3d 100%);
             display: flex;
             align-items: flex-start;
             justify-content: center;
@@ -20,19 +24,16 @@
             padding: 40px 0;
         }
 
-        /* KTM blue diagonal background stripes */
+        /* Subtle grid texture overlay */
         body::before {
             content: '';
             position: fixed;
-            top: -50%; left: -50%;
-            width: 200%; height: 200%;
-            background: repeating-linear-gradient(
-                45deg,
-                transparent,
-                transparent 60px,
-                rgba(251,191,36,0.03) 60px,
-                rgba(251,191,36,0.03) 120px
-            );
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background-image:
+                linear-gradient(rgba(251,191,36,0.04) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(251,191,36,0.04) 1px, transparent 1px);
+            background-size: 50px 50px;
             pointer-events: none;
         }
 
@@ -42,7 +43,35 @@
             position: fixed;
             top: 0; left: 0; right: 0;
             height: 4px;
-            background: linear-gradient(90deg, #fbbf24, #f59e0b, #fbbf24);
+            background: linear-gradient(90deg, transparent, #fbbf24 30%, #f59e0b 70%, transparent);
+        }
+
+        /* Glowing orbs */
+        .bg-orb-1 {
+            position: fixed;
+            top: -100px; left: -100px;
+            width: 400px; height: 400px;
+            background: radial-gradient(circle, rgba(30,58,138,0.4) 0%, transparent 70%);
+            border-radius: 50%;
+            pointer-events: none;
+        }
+
+        .bg-orb-2 {
+            position: fixed;
+            bottom: -150px; right: -100px;
+            width: 500px; height: 500px;
+            background: radial-gradient(circle, rgba(251,191,36,0.08) 0%, transparent 70%);
+            border-radius: 50%;
+            pointer-events: none;
+        }
+
+        .bg-orb-3 {
+            position: fixed;
+            top: 50%; right: 10%;
+            width: 200px; height: 200px;
+            background: radial-gradient(circle, rgba(29,78,216,0.3) 0%, transparent 70%);
+            border-radius: 50%;
+            pointer-events: none;
         }
 
         .login-wrap {
@@ -311,6 +340,10 @@
     </style>
 </head>
 <body>
+
+<div class="bg-orb-1"></div>
+<div class="bg-orb-2"></div>
+<div class="bg-orb-3"></div>
 
 <div class="login-wrap">
 
