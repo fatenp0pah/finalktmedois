@@ -106,7 +106,7 @@
                         </div>
                         <div style="font-size:11px;color:#b91c1c;margin-top:2px">
                             Tick this if delivery was delayed. A penalty of 1% of Subtotal
-                            (RM {{ number_format($Subtotal * 0.01, 2) }}) will be deducted.
+                         (RM {{ number_format((float)$Subtotal * 0.01, 2) }})will be deducted.
                         </div>
                     </div>
                 </label>
