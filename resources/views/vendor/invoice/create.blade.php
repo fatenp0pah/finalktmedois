@@ -2,6 +2,16 @@
 @section('title', 'Submit Invoice')
 @section('content')
 
+{{-- Success message --}}
+@if(session('success'))
+<div style="background:#dcfce7;border:1px solid #86efac;border-left:4px solid #22c55e;
+            border-radius:10px;padding:14px 18px;margin-bottom:20px;
+            display:flex;align-items:center;gap:10px;font-size:14px;color:#166534">
+    <i class="fa fa-check-circle" style="font-size:18px;flex-shrink:0"></i>
+    <span>{{ session('success') }}</span>
+</div>
+@endif
+
 {{-- Page header --}}
 <div class="ktm-page-header">
     <div style="display:flex;align-items:center;gap:14px">
