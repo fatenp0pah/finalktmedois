@@ -30,9 +30,7 @@
 
         /* Sidebar */
         .ktm-sidebar{width:260px;height:100vh;background:var(--sidebar-bg);display:flex;flex-direction:column;position:fixed;top:0;left:0;z-index:100;overflow:hidden;}
-        .ktm-sidebar-header{background:linear-gradient(135deg,#1e3a8a 0%,#1e40af 60%,#1d4ed8 100%);padding:20px 16px 16px;text-align:center;flex-shrink:0;}
-        .ktm-sidebar-logo{width:48px;height:48px;background:#fff;border-radius:10px;display:inline-flex;align-items:center;justify-content:center;margin-bottom:10px;}
-        .ktm-sidebar-logo i{font-size:24px;color:#1e3a8a;}
+        .ktm-sidebar-header{padding:20px 16px 16px;text-align:center;flex-shrink:0;}
         .ktm-sidebar-title{color:#fff;font-size:18px;font-weight:800;margin:0;}
         .ktm-sidebar-sub{color:rgba(255,255,255,0.7);font-size:10px;margin-top:3px;}
 
@@ -44,10 +42,10 @@
 
         .ktm-user-box{margin:14px 12px;background:rgba(255,255,255,0.07);border-radius:10px;padding:12px;font-size:12px;color:var(--sidebar-text);}
         .role-badge{display:inline-block;padding:2px 10px;border-radius:20px;font-size:10px;font-weight:700;margin-top:4px;}
-        .role-vendor{background:rgba(251,191,36,0.2);color:#0f172a;font-weight:700;}
+        .role-vendor{background:rgba(251,191,36,0.2);color:#fbbf24;font-weight:700;}
         .role-officer{background:rgba(251,191,36,0.2);color:#fbbf24;}
 
-        .ktm-nav-section{padding:6px 12px 2px;font-size:9px;font-weight:700;color:rgba(255,255,255,0.3);text-transform:uppercase;letter-spacing:1px;margin-top:8px;}
+        .ktm-nav-divider{height:1px;background:rgba(255,255,255,0.06);margin:6px 16px;}
         .ktm-nav-link{display:flex;align-items:center;gap:10px;color:var(--sidebar-text);text-decoration:none;padding:10px 16px;margin:2px 8px;border-radius:8px;font-size:13px;font-weight:500;transition:all .2s;}
         .ktm-nav-link:hover{background:var(--sidebar-hover);color:#fbbf24;font-weight:700;}
         .ktm-nav-link.active{background:var(--sidebar-active);color:#1e3a8a;font-weight:700;}
@@ -60,7 +58,7 @@
 
         /* Main */
         .ktm-main{margin-left:260px;flex:1;display:flex;flex-direction:column;min-height:100vh;}
-        .ktm-topbar{background:linear-gradient(135deg,#1e3a8a 0%,#1e40af 60%,#1d4ed8 100%);padding:14px 28px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;}
+        .ktm-topbar{padding:14px 28px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;}
         .ktm-topbar-title{color:#fff;font-size:15px;font-weight:700;}
         .ktm-topbar-right{display:flex;align-items:center;gap:12px;}
         .ktm-topbar-user{color:rgba(255,255,255,0.9);font-size:12px;display:flex;align-items:center;gap:6px;}
@@ -120,9 +118,9 @@
 </head>
 <body>
 
-<aside class="ktm-sidebar {{ Auth::check() && Auth::user()->isOfficer() ? 'officer-theme' : '' }}">
+<aside class="ktm-sidebar">
 
-    {{-- Header — fixed, never scrolls --}}
+    {{-- Header --}}
     <div class="ktm-sidebar-header" style="{{ Auth::check() && Auth::user()->isOfficer() ? 'background:linear-gradient(135deg,#064e3b 0%,#065f46 60%,#047857 100%)' : 'background:linear-gradient(135deg,#1e3a8a 0%,#1e40af 60%,#1d4ed8 100%)' }}">
         <img src="{{ asset('images/R.png') }}" alt="KTM" style="height:44px;width:auto;margin-bottom:8px">
         <div class="ktm-sidebar-title">KTMeDOIS</div>
@@ -147,7 +145,7 @@
 
         @auth
         @if(Auth::user()->isVendor())
-            <div class="ktm-nav-section">Module 1 — Vendor Registry</div>
+            {{-- Vendor nav --}}
             <a href="{{ route('vendor.dashboard') }}" class="ktm-nav-link {{ request()->routeIs('vendor.dashboard') ? 'active' : '' }}">
                 <i class="fa fa-home"></i> Dashboard
             </a>
@@ -155,7 +153,8 @@
                 <i class="fa fa-id-card"></i> My Profile
             </a>
 
-            <div class="ktm-nav-section">Module 2 — Delivery Orders</div>
+            <div class="ktm-nav-divider"></div>
+
             <a href="{{ route('vendor.do.dashboard') }}" class="ktm-nav-link {{ request()->routeIs('vendor.do.dashboard') ? 'active' : '' }}">
                 <i class="fa fa-truck"></i> DO Dashboard
             </a>
@@ -174,7 +173,8 @@
                 <i class="fa fa-bell"></i> Notifications
             </a>
 
-            <div class="ktm-nav-section">Module 3 — Invoices</div>
+            <div class="ktm-nav-divider"></div>
+
             @if(Auth::user()->vendor && Auth::user()->vendor->isActive())
             <a href="{{ route('vendor.invoice.index') }}" class="ktm-nav-link {{ request()->routeIs('vendor.invoice.index') ? 'active' : '' }}">
                 <i class="fa fa-file-invoice"></i> My Invoices
@@ -190,9 +190,9 @@
         @endif
 
         @if(Auth::user()->isOfficer())
-            <div class="ktm-nav-section">Module 2 — Delivery Orders</div>
+            {{-- Officer nav --}}
             <a href="{{ route('officer.dashboard') }}" class="ktm-nav-link {{ request()->routeIs('officer.dashboard') ? 'active' : '' }}">
-                <i class="fa fa-home"></i> DO Dashboard
+                <i class="fa fa-home"></i> Dashboard
             </a>
             <a href="{{ route('officer.do.review') }}" class="ktm-nav-link {{ request()->routeIs('officer.do.review') ? 'active' : '' }}">
                 <i class="fa fa-clipboard-check"></i> Review DOs
@@ -206,6 +206,12 @@
             <a href="{{ route('officer.notifications') }}" class="ktm-nav-link {{ request()->routeIs('officer.notifications') ? 'active' : '' }}">
                 <i class="fa fa-bell"></i> Notifications
             </a>
+
+            <div class="ktm-nav-divider"></div>
+
+            <a href="{{ route('officer.invoices') }}" class="ktm-nav-link {{ request()->routeIs('officer.invoices') ? 'active' : '' }}">
+                <i class="fa fa-file-invoice"></i> Invoice List
+            </a>
             <a href="{{ route('officer.audit') }}" class="ktm-nav-link {{ request()->routeIs('officer.audit') ? 'active' : '' }}">
                 <i class="fa fa-history"></i> Audit Log
             </a>
@@ -213,7 +219,6 @@
         @endauth
 
     </div>
-    {{-- End scrollable nav --}}
 
     {{-- Logout — always pinned at bottom --}}
     <div class="ktm-sidebar-footer">
@@ -231,7 +236,10 @@
 
 <div class="ktm-main">
     <div class="ktm-topbar" style="{{ Auth::check() && Auth::user()->isOfficer() ? 'background:linear-gradient(135deg,#064e3b 0%,#065f46 60%,#047857 100%)' : 'background:linear-gradient(135deg,#1e3a8a 0%,#1e40af 60%,#1d4ed8 100%)' }}">
-        <div class="ktm-topbar-title" style="display:flex;align-items:center;gap:10px"><img src="{{ asset('images/R.png') }}" alt="KTM" style="height:28px;filter:brightness(0) invert(1)"><span>KTMeDOIS</span></div>
+        <div class="ktm-topbar-title" style="display:flex;align-items:center;gap:10px">
+            <img src="{{ asset('images/R.png') }}" alt="KTM" style="height:28px;filter:brightness(0) invert(1)">
+            <span>KTMeDOIS</span>
+        </div>
         <div class="ktm-topbar-right">
             @auth
             <div class="ktm-topbar-user">

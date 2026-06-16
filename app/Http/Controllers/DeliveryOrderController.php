@@ -31,17 +31,11 @@ class DeliveryOrderController extends Controller
         return DeliveryOrder::where('VendorID', Auth::user()->vendor->VendorID);
     }
 
-    // Simulates PO validation against KTM procurement records
-    // In production: would call KTM procurement API to verify PO exists
-    // For prototype: validates format and ensures PO is not empty
     private function validatePONumber(string $poNo): bool
     {
-        // Must not be empty and must be at least 3 characters
         if (strlen(trim($poNo)) < 3) {
             return false;
         }
-        // Simulate: PO numbers starting with 'INVALID' are rejected
-        // This demonstrates the validation concept for the prototype
         if (strtoupper(substr(trim($poNo), 0, 7)) === 'INVALID') {
             return false;
         }
@@ -55,11 +49,8 @@ class DeliveryOrderController extends Controller
         $user = Auth::user();
 
         if ($user->isVendor()) {
-            // Vendor sees all their own DOs including drafts
             $query = $this->vendorDOQuery();
         } else {
-            // Officer sees all DOs EXCEPT drafts
-            // Drafts are vendor-side only — not yet officially submitted
             $query = DeliveryOrder::with('vendor')
                 ->where('DOStatus', '!=', 'Draft');
         }
@@ -74,7 +65,6 @@ class DeliveryOrderController extends Controller
 
     public function create()
     {
-        // Only active vendors can create DOs
         if (!Auth::user()->isVendor()) {
             return redirect()->route('vendor.do.dashboard')
                 ->with('error', 'Only vendors can create Delivery Orders.');
@@ -123,13 +113,10 @@ class DeliveryOrderController extends Controller
             'quantity.min'              => 'Quantity must be at least 1.',
         ]);
 
-        // ── PO Number validation ───────────────────────────────────────────────
-        // RFP requirement: "system automatically validates the PO number
-        // against KTM's procurement records"
-        // Prototype: validates format — production would call procurement API
         if (!$this->validatePONumber($request->po_no)) {
             return back()
-                ->withErrors(['po_no' =>
+                ->withErrors([
+                    'po_no' =>
                     'PO Number "' . $request->po_no . '" could not be validated against KTM procurement records. Please check the PO number and try again.'
                 ])
                 ->withInput();
@@ -139,21 +126,18 @@ class DeliveryOrderController extends Controller
         $action = $request->input('action');
         $status = ($action === 'draft') ? 'Draft' : 'Submitted';
 
-        // Auto-generate DO number if not provided
         $doNo = trim($request->input('do_no', ''));
         if (!$doNo) {
             $count = DeliveryOrder::count() + 1;
             $doNo  = 'DO-' . now()->format('Y') . '-' . str_pad($count, 3, '0', STR_PAD_LEFT);
         }
 
-        // Check DO number is unique
         if (DeliveryOrder::where('DONumber', $doNo)->exists()) {
             return back()
                 ->withErrors(['do_no' => 'DO Number "' . $doNo . '" already exists. Please use a different number.'])
                 ->withInput();
         }
 
-        // Handle file uploads
         $doFileLink    = null;
         $proofFileLink = null;
         if ($request->hasFile('do_file')) {
@@ -163,9 +147,11 @@ class DeliveryOrderController extends Controller
             $proofFileLink = $request->file('proof_file')->store('proof-of-delivery', 'public');
         }
 
+        // FIX 1: OrderDate is now saved to database
         $do = DeliveryOrder::create([
             'DONumber'         => $doNo,
             'VendorID'         => $vendor->VendorID,
+            'OrderDate'        => $request->order_date,
             'PONumber'         => $request->po_no,
             'ProjectReference' => $request->project_ref,
             'Customer'         => $request->customer,
@@ -185,7 +171,6 @@ class DeliveryOrderController extends Controller
             'SubmittedDate'    => $status === 'Submitted' ? now() : null,
         ]);
 
-        // Audit log — satisfies NFR: all actions require audit logging
         AuditLog::log(
             Auth::id(),
             'DO_' . strtoupper($status),
@@ -193,7 +178,6 @@ class DeliveryOrderController extends Controller
             $doNo . ' ' . strtolower($status) . ' by ' . $vendor->CompanyName
         );
 
-        // Notify all officers when DO is submitted
         if ($status === 'Submitted') {
             $officers = User::where('UserRole', 'Officer')->get();
             foreach ($officers as $officer) {
@@ -212,7 +196,6 @@ class DeliveryOrderController extends Controller
     }
 
     // ── Status Tracking ────────────────────────────────────────────────────────
-    // RFP requirement: "DO status visible at all stages: Submitted → Under Review → Approved/Rejected"
 
     public function status()
     {
@@ -243,6 +226,48 @@ class DeliveryOrderController extends Controller
         return view('delivery-order.review', compact('deliveryOrders'));
     }
 
+    // FIX 2: Start Review — officer sets DO to Under Review
+    public function startReview(Request $request)
+    {
+        if (!Auth::user()->isOfficer()) {
+            return redirect()->route('vendor.dashboard')
+                ->with('error', 'Only officers can review Delivery Orders.');
+        }
+
+        $request->validate([
+            'DOID' => 'required|exists:delivery_orders,DOID',
+        ]);
+
+        $do = DeliveryOrder::with('vendor')->findOrFail($request->DOID);
+
+        // Only Submitted DOs can be moved to Under Review
+        if ($do->DOStatus !== 'Submitted') {
+            return back()->with('error', 'Only Submitted DOs can be moved to Under Review.');
+        }
+
+        $do->update([
+            'DOStatus' => 'Under Review',
+            'Remark'   => 'Under review by KTMB Officer.',
+        ]);
+
+        AuditLog::log(
+            Auth::id(),
+            'DO_UNDER_REVIEW',
+            'DOID:' . $do->DOID,
+            $do->DONumber . ' set to Under Review by officer.'
+        );
+
+        // Notify vendor
+        if ($do->vendor) {
+            Notification::send(
+                $do->vendor->UserID,
+                $do->DONumber . ' is now under review by KTMB Officer.'
+            );
+        }
+
+        return back()->with('success', $do->DONumber . ' is now Under Review.');
+    }
+
     public function updateReview(Request $request)
     {
         if (!Auth::user()->isOfficer()) {
@@ -260,7 +285,6 @@ class DeliveryOrderController extends Controller
         $action = $request->action;
         $remark = trim($request->remark ?? '');
 
-        // Remark is required for rejection
         if ($action === 'reject' && $remark === '') {
             return back()->with('error', 'Please enter a rejection reason before rejecting.');
         }
@@ -273,7 +297,6 @@ class DeliveryOrderController extends Controller
             'Remark'   => $remark,
         ]);
 
-        // Audit log
         AuditLog::log(
             Auth::id(),
             'DO_' . strtoupper($newStatus),
@@ -281,8 +304,6 @@ class DeliveryOrderController extends Controller
             $do->DONumber . ' ' . strtolower($newStatus) . ' by officer. Remark: ' . $remark
         );
 
-        // Notify vendor of status change
-        // RFP: "Automatic notifications sent whenever status changes"
         if ($do->vendor) {
             Notification::send(
                 $do->vendor->UserID,
@@ -316,7 +337,6 @@ class DeliveryOrderController extends Controller
             ->where('DONumber', $doNo)
             ->firstOrFail();
 
-        // Vendors can only see their own DOs — security enforcement
         if (Auth::user()->isVendor()) {
             $vendor = Auth::user()->vendor;
             if ($selectedDO->VendorID !== $vendor->VendorID) {
@@ -324,7 +344,6 @@ class DeliveryOrderController extends Controller
             }
         }
 
-        // Audit log — view action recorded
         AuditLog::log(
             Auth::id(),
             'VIEW_DO',
@@ -336,7 +355,6 @@ class DeliveryOrderController extends Controller
     }
 
     // ── Notifications ──────────────────────────────────────────────────────────
-    // RFP: "Automatic notifications sent to relevant parties whenever status changes"
 
     public function notifications()
     {
@@ -344,7 +362,6 @@ class DeliveryOrderController extends Controller
             ->orderBy('CreatedDate', 'desc')
             ->get();
 
-        // Mark all as read
         \App\Models\Notification::where('UserID', Auth::id())
             ->where('NotificationStatus', 'Unread')
             ->update(['NotificationStatus' => 'Read']);

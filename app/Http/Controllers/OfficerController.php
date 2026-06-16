@@ -38,4 +38,13 @@ class OfficerController extends Controller
 
         return view('officer.audit-log', compact('logs'));
     }
+    public function invoices()
+    {
+        $invoices = \App\Models\Invoice::with([
+            'deliveryOrder',
+            'deliveryOrder.vendor'
+        ])->latest('InvoiceID')->get();
+
+        return view('officer.invoices', compact('invoices'));
+    }
 }
