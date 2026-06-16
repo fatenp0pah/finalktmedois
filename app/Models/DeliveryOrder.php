@@ -12,6 +12,7 @@ class DeliveryOrder extends Model
     protected $fillable = [
         'DONumber',
         'VendorID',
+        'OrderDate',
         'PONumber',
         'ProjectReference',
         'Customer',
