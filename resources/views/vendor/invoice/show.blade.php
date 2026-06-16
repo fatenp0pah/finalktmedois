@@ -1,5 +1,40 @@
 @extends('layouts.app')
 @section('title', 'Invoice ' . $invoice->InvoiceNumber)
+
+@push('styles')
+<style>
+    .invoice-doc {
+        background: #fff;
+        max-width: 900px;
+        margin: 0 auto;
+        padding: 40px;
+        border: 1px solid #e2e8f0;
+        border-radius: 14px;
+        box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+        font-family: 'Segoe UI', Arial, sans-serif;
+    }
+    .inv-divider {
+        border: none;
+        border-top: 1px solid #e2e8f0;
+        margin: 16px 0;
+    }
+    @media print {
+        * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+        .no-print, .ktm-sidebar, .ktm-topbar { display: none !important; }
+        .ktm-main { margin-left: 0 !important; }
+        .ktm-content { padding: 0 !important; }
+        .invoice-doc {
+            border: none;
+            box-shadow: none;
+            padding: 20px;
+            max-width: 100%;
+            margin: 0;
+        }
+        body { background: white !important; }
+    }
+</style>
+@endpush
+
 @section('content')
 
 {{-- Action bar (hidden on print) --}}
@@ -31,13 +66,11 @@
 <div class="invoice-doc" id="invoice-print">
 
     {{-- Header --}}
-    <div style="display:flex;justify-content:space-between;align-items:flex-start;
-                margin-bottom:24px">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:24px">
 
         {{-- Left: KTM Logo + Title --}}
         <div style="display:flex;flex-direction:column;align-items:flex-start;gap:10px">
-            <img src="{{ asset('images/R.png') }}" alt="KTM Logo"
-                 style="height:60px;width:auto">
+            <img src="{{ asset('images/R.png') }}" alt="KTM Logo" style="height:60px;width:auto">
             <div style="font-size:32px;font-weight:900;color:#1e3a8a;letter-spacing:1px">
                 INVOICE
             </div>
@@ -66,8 +99,7 @@
 
         {{-- Bill-to --}}
         <div>
-            <div style="font-size:11px;font-weight:700;color:#6b7280;
-                        text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">
+            <div style="font-size:11px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">
                 Bill-to
             </div>
             <div style="font-size:13px;font-weight:700;color:#111827;margin-bottom:4px">
@@ -84,29 +116,21 @@
             <table style="width:100%;font-size:12px;border-collapse:collapse;margin-left:auto">
                 <tr>
                     <td style="color:#6b7280;padding:3px 8px 3px 0;text-align:right">Invoice No</td>
-                    <td style="font-weight:600;color:#111827;padding:3px 0;text-align:right">
-                        {{ $invoice->InvoiceNumber }}
-                    </td>
+                    <td style="font-weight:600;color:#111827;padding:3px 0;text-align:right">{{ $invoice->InvoiceNumber }}</td>
                 </tr>
                 <tr>
                     <td style="color:#6b7280;padding:3px 8px 3px 0;text-align:right">Invoice Date</td>
                     <td style="font-weight:600;color:#111827;padding:3px 0;text-align:right">
-                        {{ $invoice->SubmittedDate
-                            ? \Carbon\Carbon::parse($invoice->SubmittedDate)->timezone('Asia/Kuala_Lumpur')->format('d M Y')
-                            : '—' }}
+                        {{ $invoice->SubmittedDate ? \Carbon\Carbon::parse($invoice->SubmittedDate)->timezone('Asia/Kuala_Lumpur')->format('d M Y') : '—' }}
                     </td>
                 </tr>
                 <tr>
                     <td style="color:#6b7280;padding:3px 8px 3px 0;text-align:right">DO Reference</td>
-                    <td style="font-weight:600;color:#111827;padding:3px 0;text-align:right">
-                        {{ $invoice->deliveryOrder->DONumber ?? '—' }}
-                    </td>
+                    <td style="font-weight:600;color:#111827;padding:3px 0;text-align:right">{{ $invoice->deliveryOrder->DONumber ?? '—' }}</td>
                 </tr>
                 <tr>
                     <td style="color:#6b7280;padding:3px 8px 3px 0;text-align:right">PO Number</td>
-                    <td style="font-weight:600;color:#111827;padding:3px 0;text-align:right">
-                        {{ $invoice->deliveryOrder->PONumber ?? '—' }}
-                    </td>
+                    <td style="font-weight:600;color:#111827;padding:3px 0;text-align:right">{{ $invoice->deliveryOrder->PONumber ?? '—' }}</td>
                 </tr>
                 <tr>
                     <td style="color:#6b7280;padding:3px 8px 3px 0;text-align:right">Status</td>
@@ -122,51 +146,37 @@
                 </tr>
             </table>
         </div>
-
     </div>
 
     {{-- Customer / Summary row --}}
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:0">
         <div style="font-size:12px;color:#374151;line-height:1.8">
             <span style="color:#6b7280">Vendor No</span>
-            <span style="font-weight:600;margin-left:12px">
-                {{ $invoice->deliveryOrder->vendor->VendorNumber ?? '—' }}
-            </span><br>
+            <span style="font-weight:600;margin-left:12px">{{ $invoice->deliveryOrder->vendor->VendorNumber ?? '—' }}</span><br>
             <span style="color:#6b7280">Project Ref</span>
-            <span style="font-weight:600;margin-left:12px">
-                {{ $invoice->deliveryOrder->ProjectReference ?? '—' }}
-            </span>
+            <span style="font-weight:600;margin-left:12px">{{ $invoice->deliveryOrder->ProjectReference ?? '—' }}</span>
         </div>
 
-        {{-- Right: Line Total / Tax / Subtotals --}}
         <div>
             <table style="width:100%;font-size:12px;border-collapse:collapse">
                 <tr>
                     <td style="color:#6b7280;padding:3px 0;text-align:right;padding-right:20px">Line Total</td>
-                    <td style="font-weight:600;color:#111827;padding:3px 0;text-align:right">
-                        {{ number_format($invoice->Subtotal, 2) }}
-                    </td>
+                    <td style="font-weight:600;color:#111827;padding:3px 0;text-align:right">{{ number_format($invoice->Subtotal, 2) }}</td>
                 </tr>
                 <tr>
                     <td style="color:#6b7280;padding:3px 0;text-align:right;padding-right:20px">Service Tax (6%)</td>
-                    <td style="font-weight:600;color:#111827;padding:3px 0;text-align:right">
-                        {{ number_format($invoice->Tax, 2) }}
-                    </td>
+                    <td style="font-weight:600;color:#111827;padding:3px 0;text-align:right">{{ number_format($invoice->Tax, 2) }}</td>
                 </tr>
                 @if($invoice->Discount > 0)
                 <tr>
                     <td style="color:#6b7280;padding:3px 0;text-align:right;padding-right:20px">Discount</td>
-                    <td style="font-weight:600;color:#16a34a;padding:3px 0;text-align:right">
-                        -{{ number_format($invoice->Discount, 2) }}
-                    </td>
+                    <td style="font-weight:600;color:#16a34a;padding:3px 0;text-align:right">-{{ number_format($invoice->Discount, 2) }}</td>
                 </tr>
                 @endif
                 @if($invoice->Penalty > 0)
                 <tr>
                     <td style="color:#6b7280;padding:3px 0;text-align:right;padding-right:20px">Penalty</td>
-                    <td style="font-weight:600;color:#dc2626;padding:3px 0;text-align:right">
-                        -{{ number_format($invoice->Penalty, 2) }}
-                    </td>
+                    <td style="font-weight:600;color:#dc2626;padding:3px 0;text-align:right">-{{ number_format($invoice->Penalty, 2) }}</td>
                 </tr>
                 @endif
             </table>
@@ -180,9 +190,7 @@
         <table style="font-size:12px;border-collapse:collapse;min-width:260px">
             <tr>
                 <td style="color:#6b7280;padding:4px 20px 4px 0;text-align:right">Total</td>
-                <td style="color:#111827;padding:4px 0;text-align:right;font-weight:600">
-                    {{ number_format($invoice->TotalAmount, 2) }}
-                </td>
+                <td style="color:#111827;padding:4px 0;text-align:right;font-weight:600">{{ number_format($invoice->TotalAmount, 2) }}</td>
             </tr>
             <tr>
                 <td style="color:#6b7280;padding:4px 20px 4px 0;text-align:right">Payments</td>
@@ -208,9 +216,7 @@
         <div style="font-size:12px;color:#374151">
             <strong>Payment Terms</strong> &nbsp;30 DAYS &nbsp;&nbsp;
             <strong>Due Date</strong> &nbsp;
-            {{ $invoice->SubmittedDate
-                ? \Carbon\Carbon::parse($invoice->SubmittedDate)->addDays(30)->timezone('Asia/Kuala_Lumpur')->format('d M Y')
-                : '—' }}
+            {{ $invoice->SubmittedDate ? \Carbon\Carbon::parse($invoice->SubmittedDate)->addDays(30)->timezone('Asia/Kuala_Lumpur')->format('d M Y') : '—' }}
         </div>
         <div style="font-size:16px;font-weight:800;color:#1e3a8a">
             Balance Due &nbsp;
@@ -235,9 +241,7 @@
         <tbody>
             <tr style="border-bottom:1px solid #e2e8f0">
                 <td style="padding:12px;color:#374151">1</td>
-                <td style="padding:12px;color:#374151">
-                    {{ $invoice->deliveryOrder->DONumber ?? '—' }}
-                </td>
+                <td style="padding:12px;color:#374151">{{ $invoice->deliveryOrder->DONumber ?? '—' }}</td>
                 <td style="padding:12px;color:#374151">
                     {{ $invoice->InvoiceDescription ?: ($invoice->deliveryOrder->ItemDescription ?? 'Delivery Order Claim') }}
                     @if($invoice->deliveryOrder->DeliveryDate)
@@ -246,25 +250,17 @@
                     </div>
                     @endif
                 </td>
-                <td style="padding:12px;text-align:right;color:#374151">
-                    {{ $invoice->deliveryOrder->Quantity ?? 1 }}
-                </td>
+                <td style="padding:12px;text-align:right;color:#374151">{{ $invoice->deliveryOrder->Quantity ?? 1 }}</td>
                 <td style="padding:12px;text-align:right;color:#374151">
                     {{ number_format($invoice->Subtotal / max(1, $invoice->deliveryOrder->Quantity ?? 1), 2) }}
                 </td>
-                <td style="padding:12px;text-align:right;font-weight:600;color:#111827">
-                    {{ number_format($invoice->Subtotal, 2) }}
-                </td>
+                <td style="padding:12px;text-align:right;font-weight:600;color:#111827">{{ number_format($invoice->Subtotal, 2) }}</td>
             </tr>
         </tbody>
         <tfoot>
             <tr style="background:#f8fafc">
-                <td colspan="5" style="padding:10px 12px;text-align:right;
-                            font-weight:600;color:#374151">Line Total</td>
-                <td style="padding:10px 12px;text-align:right;
-                           font-weight:700;color:#1e3a8a">
-                    {{ number_format($invoice->Subtotal, 2) }}
-                </td>
+                <td colspan="5" style="padding:10px 12px;text-align:right;font-weight:600;color:#374151">Line Total</td>
+                <td style="padding:10px 12px;text-align:right;font-weight:700;color:#1e3a8a">{{ number_format($invoice->Subtotal, 2) }}</td>
             </tr>
         </tfoot>
     </table>
@@ -273,7 +269,6 @@
 
     {{-- Footer --}}
     <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-top:16px">
-        {{-- Payment info --}}
         <div style="font-size:12px;color:#374151;line-height:1.8">
             <div style="font-weight:700;margin-bottom:4px">Please make payment to :</div>
             <div>Account Name : KERETAPI TANAH MELAYU BERHAD</div>
@@ -281,13 +276,10 @@
             <div>Bank Name &nbsp;: Malayan Banking Bhd</div>
             <div style="margin-top:12px;font-weight:700">Salesperson</div>
         </div>
-
-        {{-- QR / Stamp area --}}
         <div style="text-align:center">
-            <div style="width:80px;height:80px;border:2px dashed #cbd5e1;
-                        border-radius:8px;display:flex;align-items:center;
-                        justify-content:center;color:#9ca3af;font-size:10px;
-                        margin-bottom:8px">
+            <div style="width:80px;height:80px;border:2px dashed #cbd5e1;border-radius:8px;
+                        display:flex;align-items:center;justify-content:center;
+                        color:#9ca3af;font-size:10px;margin-bottom:8px">
                 QR Code
             </div>
             <div style="font-size:10px;color:#9ca3af">Company Stamp</div>
@@ -303,38 +295,5 @@
     </div>
 
 </div>
-
-@push('styles')
-<style>
-    .invoice-doc {
-        background: #fff;
-        max-width: 900px;
-        margin: 0 auto;
-        padding: 40px;
-        border: 1px solid #e2e8f0;
-        border-radius: 14px;
-        box-shadow: 0 4px 16px rgba(0,0,0,0.08);
-        font-family: 'Segoe UI', Arial, sans-serif;
-    }
-    .inv-divider {
-        border: none;
-        border-top: 1px solid #e2e8f0;
-        margin: 16px 0;
-    }
-    @media print {
-        .no-print { display: none !important; }
-        .ktm-sidebar, .ktm-topbar, .ktm-main > *:not(#invoice-print) { display: none !important; }
-        .ktm-main { margin-left: 0 !important; }
-        .ktm-content { padding: 0 !important; }
-        .invoice-doc {
-            border: none;
-            box-shadow: none;
-            padding: 20px;
-            max-width: 100%;
-        }
-        body { background: white !important; }
-    }
-</style>
-@endpush
 
 @endsection
