@@ -11,7 +11,6 @@ class VendorController extends Controller
     public function dashboard()
     {
         $vendor = Auth::user()->vendor;
-        $vendor->autoSyncOnLogin();
 
         $invoiceQuery = Invoice::whereHas(
             'deliveryOrder',
@@ -59,9 +58,16 @@ class VendorController extends Controller
     public function profile()
     {
         $vendor = Auth::user()->vendor;
-        $vendor->checkStatusFromMaster();
-        AuditLog::log(Auth::id(), 'VIEW_PROFILE', 'VendorID:' . $vendor->VendorID, 'Vendor viewed profile');
+
+        AuditLog::log(
+            Auth::id(),
+            'VIEW_PROFILE',
+            'VendorID:' . $vendor->VendorID,
+            'Vendor viewed profile'
+        );
+
         $apiLogs = $vendor->apiLogs()->latest('LogDate')->take(10)->get();
+
         return view('vendor.profile', compact('vendor', 'apiLogs'));
     }
 
@@ -86,7 +92,14 @@ class VendorController extends Controller
     {
         $vendor = Auth::user()->vendor;
         $vendor->simulateApiSync();
-        AuditLog::log(Auth::id(), 'VENDOR_SYNC', 'VendorID:' . $vendor->VendorID, 'Manual sync from KTMB master database');
+
+        AuditLog::log(
+            Auth::id(),
+            'VENDOR_SYNC',
+            'VendorID:' . $vendor->VendorID,
+            'Manual sync from KTMB master database'
+        );
+
         return back()->with('success', 'Vendor data synchronised. Last sync: ' . now()->format('d M Y, H:i'));
     }
 }
